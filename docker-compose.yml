@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ardit
+      POSTGRES_DB: luxonis
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "pg_isready",
+          "-U",
+          "postgres",
+          "-d",
+          "luxonis"
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    environment:
+      WAIT_HOSTS: db:5432
+
+  react-app:
+    build: .\react-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - app
+
+volumes:
+  db-data:
